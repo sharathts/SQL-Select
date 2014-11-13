@@ -316,14 +316,14 @@ void case3(int which, char ***table, char ***temp_table, int attribute_list[], i
 int main()
 {
     
-    int i, j, i1, j1, na, nc, choice, map, map2, attribute_list[no_attributes], flag, count, join, decision, disp_attribute_list[no_attributes], three_or_four;
+    int i, j, i1, j1, na, nc, choice, map, map2, attribute_list[no_attributes], flag, count, join, decision, disp_attribute_list[no_attributes];
     char sign, *c, *c2, ***table, ***temp_table, ***and_table, junk;
     table = new_table(table);
     c = (char *)malloc(sizeof(char));
     c2 = (char *)malloc(sizeof(char));
     fp = fopen("database2.txt", "r");
     get_rows_and_columns();
-    printf("\n1.View table\n2.Fetch column\n3.RA select or Fetch columns with conditionRA select\n");
+    printf("\n1.View table\n2.Fetch column\n3.Fetch columns with condition\n4.RA select\n");
     scanf("%d", &choice);
     switch(choice)
     {
@@ -335,25 +335,20 @@ int main()
             case2();
             break;
         case 3:
-            printf("\nEnter 4 for RA select and 3 for Fetching columns with condition");
-            scanf("%d", &three_or_four);
-            if (three_or_four == 3)
-            {
-                printf("\nEnter the number of colums to be fetched. ");
-                scanf("%d", &na);
-                printf("\nEnter attribute names. ");
-                for (i=0; i<na; i++)
-                {   
-                    scanf("%s", c);
-                    j = map_column(c);
-                    if (j == -1)
-                    {
-                        printf("\nNo such column %s. Try again.\n", c);
-                        i--;
-                        continue;
-                    }
-                    disp_attribute_list[i] = j;
+            printf("\nEnter the number of colums to be fetched. ");
+            scanf("%d", &na);
+            printf("\nEnter attribute names. ");
+            for (i=0; i<na; i++)
+            {   
+                scanf("%s", c);
+                j = map_column(c);
+                if (j == -1)
+                {
+                    printf("\nNo such column %s. Try again.\n", c);
+                    i--;
+                    continue;
                 }
+                disp_attribute_list[i] = j;
             }
             na = no_attributes;
             for (i=0; i<na; i++)
@@ -392,24 +387,60 @@ int main()
                 }
             }
             int i1, j1, flag1 = 0;
-            if (three_or_four == 3)
-            {
-                printf("\nThe final table is \n");
-                for( i=0; i<=no_rows; i++)
+            printf("\nThe final table is \n");
+            for( i=0; i<=no_rows; i++)
+             {
+                for( j=1; j<=no_attributes; j++)
                 {
-                    for( j=1; j<=no_attributes; j++)
+                    flag1 = 0;
+                    for( i1=0; i1<na; i1++)
+                        if(j == disp_attribute_list[i1])
+                        {
+                            flag1 = 1;
+                            break;
+                        }
+                    if(flag1)
+                        printf("%s ", table[i][j]);
+                }
+                printf("\n");
+            }
+        break;
+
+        case 4:
+            na = no_attributes;
+            for (i=0; i<na; i++)
+            {   
+                attribute_list[i] = i + 1;
+            }
+            printf("\nEnter the number of conditions\n");
+            scanf("%d", &nc);
+            table = new_table(table);
+            temp_table = new_table(temp_table);
+            temp_table = get_db(temp_table);
+            for (i=0; i<nc; i++)
+            {
+                printf("Enter type 3.C1 = C2 4.C1 = a123\n");
+/*                Decision decides if it belongs to case 3 or case 4*/
+                scanf("%d", &decision);
+                if (i==0)
+                    case3(decision, table, temp_table, attribute_list, na);
+                else
+                {
+                    printf("\n1.AND 2.OR\n");
+                    scanf("%d", &join);
+                    if (join == 1)
                     {
-                        flag1 = 0;
-                        for( i1=0; i1<na; i1++)
-                            if(j == disp_attribute_list[i1])
-                            {
-                                flag1 = 1;
-                                break;
-                            }
-                        if(flag1)
-                            printf("%s ", table[i][j]);
+                        temp_table = table;
+                        and_table = new_table(and_table);
+                        table = and_table;
+                        case3(decision, table, temp_table, attribute_list, na);
                     }
-                    printf("\n");
+                    else
+                    {
+                        temp_table = new_table(temp_table);
+                        temp_table = get_db(temp_table);
+                        case3(decision, table, temp_table, attribute_list, na);
+                    }
                 }
             }
             break;
